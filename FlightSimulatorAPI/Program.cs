@@ -1,9 +1,8 @@
-using FlightSimulatorAPI.Data;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
+using FlightSimulatorAPI.Data;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var toto = builder.Configuration["MYSQL_CONNECTION_STRING"];
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>
@@ -13,9 +12,7 @@ builder.Services.AddDbContext<AppDbContext>
     .EnableSensitiveDataLogging()
     .EnableDetailedErrors()
     );
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -26,12 +23,15 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
-app.UseHttpsRedirection();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseAuthorization();
-
 app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
